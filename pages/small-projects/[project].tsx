@@ -1,8 +1,4 @@
-import {
-  GetServerSideProps,
-  InferGetServerSidePropsType,
-  NextPage,
-} from "next";
+import { InferGetServerSidePropsType } from "next";
 import React from "react";
 import getFileList from "../../utils/getFileList";
 import { v4 as uuid } from "uuid";
@@ -10,21 +6,14 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { AppContext } from "next/app";
 import { capitalizeFirst } from "../../utils/formatString";
+import Error from "next/error";
 
 export const getServerSideProps = async (context: AppContext) => {
-  const dirList = getFileList(["components", "page-components"]);
-
-  if (
-    typeof context.router.query.project === "string" &&
-    !dirList.includes(capitalizeFirst(context.router.query.project))
-  ) {
-    return {
-      redirect: {
-        permanent: true,
-        destination: "/",
-      },
-    };
-  }
+  const dirList = getFileList([
+    "components",
+    "page-components",
+    "small-projects",
+  ]);
 
   return {
     props: {
@@ -38,26 +27,22 @@ const SmallProject = ({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter();
 
-  //import react components
-  const project = dirList.map((dir: string) => {
-    const ThisProject =
-      require(`../../components/page-components/${dir}`).default;
+  const ThisProject: React.FC = () => {
+    //Find the correct file
+    const thisProject = dirList.find(
+      (dir) => dir.replace(".tsx", "").toLowerCase() === router.query.project
+    );
+    //found file
+    if (thisProject) {
+      const Project =
+        require(`../../components/page-components/${thisProject}`).default;
+      return <Project />;
+    }
+    //no file
+    return <Error statusCode={404} />;
+  };
 
-    return {
-      component: <ThisProject key={uuid()} />,
-      dir: dir.replace(".tsx", "").toLowerCase(),
-    };
-  });
-
-  return (
-    <div>
-      {project.map(({ component, dir }) => {
-        const isThisComponent = router.query.project === dir;
-
-        return <div key={uuid()}>{isThisComponent ? component : ""}</div>;
-      })}
-    </div>
-  );
+  return <>{router.query.project && <ThisProject />}</>;
 };
 
 export default SmallProject;
