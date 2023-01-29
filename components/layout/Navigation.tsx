@@ -15,6 +15,8 @@ import { getClasses, getStyle } from "../../utils/getProps";
 const Navigation: React.FC<ReactProps> = ({ className, style }) => {
   const { data } = useQuery(["navigation"], fetchApi("/api/navigation"));
 
+  console.log(data);
+
   const [hoverNavItem, setHoverNavItem] = useState<string | null>(null);
 
   return data ? (
