@@ -17,9 +17,7 @@ const Navigation: React.FC<ReactProps> = ({ className, style }) => {
 
   const [hoverNavItem, setHoverNavItem] = useState<string | null>(null);
 
-  console.log(data);
-
-  return (
+  return data ? (
     <div
       className={`${getClasses(
         className
@@ -62,6 +60,8 @@ const Navigation: React.FC<ReactProps> = ({ className, style }) => {
         </div>
       </div>
     </div>
+  ) : (
+    <></>
   );
 };
 
